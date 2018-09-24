@@ -57,7 +57,7 @@
 #define CUSTOMHID_OFF_HID_DESC_Mouse            0x32
 
 #define CUSTOMHID_SIZ_DEVICE_DESC               18
-#define CUSTOMHID_SIZ_CONFIG_DESC               66
+#define CUSTOMHID_SIZ_CONFIG_DESC               41    //66
 #define CUSTOMHID_SIZ_REPORT_DESC               61
 #define CUSTOMHID_SIZ_REPORT_DESC_Mouse         62
 #define CUSTOMHID_SIZ_STRING_LANGID             4

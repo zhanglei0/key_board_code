@@ -59,7 +59,7 @@ const uint8_t CustomHID_DeviceDescriptor[CUSTOMHID_SIZ_DEVICE_DESC] =
     0x00,                       /*bDeviceSubClass*/
     0x00,                       /*bDeviceProtocol*/
     0x40,                       /*bMaxPacketSize40*/
-    0x32,                       /*idVendor (0x0483)*/
+    0x83,                       /*idVendor (0x0483)*/
     0x04,
     0x04,                       /*idProduct = 0x5750*/
     0x01,
@@ -85,7 +85,7 @@ const uint8_t CustomHID_ConfigDescriptor[CUSTOMHID_SIZ_CONFIG_DESC] =
     CUSTOMHID_SIZ_CONFIG_DESC,
     /* wTotalLength: Bytes returned */
     0x00,
-    0x02,         /* bNumInterfaces: 2 interface */
+    0x01,         /* bNumInterfaces: 2 interface */
     0x01,         /* bConfigurationValue: Configuration value */
     0x00,         /* iConfiguration: Index of string descriptor describing
                                  the configuration*/
@@ -123,9 +123,8 @@ const uint8_t CustomHID_ConfigDescriptor[CUSTOMHID_SIZ_CONFIG_DESC] =
     0x03,          /* bmAttributes: Interrupt endpoint */
     0x08,          /* wMaxPacketSize: 2 Bytes max */
     0x00,
-    0x20,          /* bInterval: Polling Interval (32 ms) */
+    0x10,          /* bInterval: Polling Interval (32 ms) */
     /* 34 */
-    	
     0x07,	/* bLength: Endpoint Descriptor size */
     USB_ENDPOINT_DESCRIPTOR_TYPE,	/* bDescriptorType: */
 			/*	Endpoint descriptor type */
@@ -136,39 +135,6 @@ const uint8_t CustomHID_ConfigDescriptor[CUSTOMHID_SIZ_CONFIG_DESC] =
     0x00,
     0x10,	/* bInterval: Polling Interval (20 ms) */
     /* 41 */
-    /*Interface 2 */
-    /* 09 */
-    0x09,         /* bLength: Interface Descriptor size */
-    USB_INTERFACE_DESCRIPTOR_TYPE,/* bDescriptorType: Interface descriptor type */
-    0x01,         /* bInterfaceNumber: Number of Interface */
-    0x00,         /* bAlternateSetting: Alternate setting */
-    0x01,         /* bNumEndpoints */
-    0x03,         /* bInterfaceClass: HID */
-    0x01,         /* bInterfaceSubClass : 1=BOOT, 0=no boot */
-    0x02,         /* nInterfaceProtocol : 0=none, 1=keyboard, 2=mouse */
-    0,            /* iInterface: Index of string descriptor */
-    /******************** Descriptor of Custom HID HID ********************/
-    /* 50 */
-    0x09,         /* bLength: HID Descriptor size */
-    HID_DESCRIPTOR_TYPE, /* bDescriptorType: HID */
-    0x11,         /* bcdHID: HID Class Spec release number */
-    0x01,
-    0x00,         /* bCountryCode: Hardware target country */
-    0x02,         /* bNumDescriptors: Number of HID class descriptors to follow */
-    0x22,         /* bDescriptorType */
-    CUSTOMHID_SIZ_REPORT_DESC_Mouse,/* wItemLength: Total length of Report descriptor */
-    0x00,
-    /******************** Descriptor of Custom HID endpoints ******************/
-    /* 59 */
-    0x07,          /* bLength: Endpoint Descriptor size */
-    USB_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType: */
-
-    0x82,          /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,          /* bmAttributes: Interrupt endpoint */
-    0x04,          /* wMaxPacketSize: 64 Bytes max */
-    0x00,
-    0x10,          /* bInterval: Polling Interval (32 ms) */
-    /* 66 */
   }
   ; /* CustomHID_ConfigDescriptor */
 const uint8_t CustomHID_ReportDescriptor[CUSTOMHID_SIZ_REPORT_DESC] =
