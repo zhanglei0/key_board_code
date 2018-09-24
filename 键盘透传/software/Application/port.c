@@ -177,17 +177,25 @@ void InitBeep(void)
 
 uint8_t ScanKeyBoard(void)
 {
+#define KEY_MASK        0x1B
   uint16_t gpio_old;
   uint8_t ret = 0;
   uint16_t gpio = GPIO_ReadInputData(GPIOB);
-  gpio &= 0x1B;
+  gpio &= KEY_MASK;
   gpio_old = gpio;
-  if(gpio != 0x1B)
+  if(gpio != KEY_MASK)
   {
     Delay(50);
-    gpio = GPIO_ReadInputData(GPIOB) & 0x1B;
+    gpio = GPIO_ReadInputData(GPIOB) & KEY_MASK;
     if(gpio == gpio_old)
     {
+      while(1)
+      {
+        if((GPIO_ReadInputData(GPIOB) & KEY_MASK) == KEY_MASK)
+        {
+          break;
+        }
+      }
       switch(gpio)
       {
       case 0x1A:

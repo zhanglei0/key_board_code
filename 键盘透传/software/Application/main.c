@@ -188,6 +188,17 @@ void ProcessMiscDev(void)
   }
 }
 
+
+static void HandleMisc(void)
+{
+    HandleUARTEvt();
+    uint8_t key = ScanKeyBoard();
+    if(key > 0 && key < 5)
+    {
+      Beep(100);
+      control_led(key - 1);
+    }
+}
 void main(void)
 {
   uint16_t i,n;
@@ -209,142 +220,136 @@ void main(void)
   InitKey();
   InitBeep();
   InitUart();
-  Beep(500);
+  Beep(100);
   Set_System();
   USB_Interrupts_Config();
   Set_USBClock();
   USB_Init();
-  for (uint8_t  n = 0; n < 3; n ++ ) 
-    RootHubDev[n].DeviceStatus = ROOT_DEV_DISCONNECT;  // 清空
-  HostSetBusFree();  // 设定USB主机空闲
   while(1)
   {
-    HandleUARTEvt();
-    key = ScanKeyBoard();
-    
-    if(key > 0 && key < 5)
-    {
-      Beep(100);
-      control_led(key - 1);
+    HostSetBusFree();  // 设定USB主机空闲
+    while(1) {
+      HandleMisc();
+      if (Query374Interrupt())
+        HostDetectInterrupt();  // 如果有USB主机中断则处理
+      if (Query374DeviceIn())
+        break;  // 有USB设备插入
     }
-    if ( Query374Interrupt())  {
+    Delay( 250 );  // 由于USB设备刚插入尚未稳定，故等待USB设备数百毫秒，消除插拔抖动
+    if (Query374Interrupt())
       HostDetectInterrupt();  // 如果有USB主机中断则处理
+    HostSetBusReset();  // USB总线复位
+    for ( i = 0; i < 100; i++ )
+    {
+      // 等待USB设备复位后重新连接
+        if ( Query374DeviceIn())
+          break;  // 有USB设备
+        Delay(1);
     }
-    if ( NewDevCount ) {
-      mDelaymS( 200 );
-      NewDevCount=0;
-      for ( n = 0; n < 3; n ++ ) {
-        if ( RootHubDev[n].DeviceStatus == ROOT_DEV_CONNECTED ) {
-          // 刚插入设备尚未初始化
-          s = InitDevice( n );  // 初始化枚举指定HUB端口的USB设备
-          RootHubDev[n].DeviceType = s;  // 保存设备类型
-        }
+    if (Query374Interrupt())
+      HostDetectInterrupt();  // 如果有USB主机中断则处理
+    if ( Query374DeviceIn())
+    {
+      // 有USB设备
+      if ( Query374DevFullSpeed()) 
+      {
+        HostSetFullSpeed( );  // 检测到全速USB设备
+      }
+      else 
+      {  // 建议参考EMB_HUB中的低速例子处理
+        HostSetLowSpeed( );  // 检测到低速USB设备,建议参考EMB_HUB中的低速例子处理
       }
     }
-    mDelaymS( 2 );
-#if 0
-    if ( count & 0x02 ) {  // 每隔一段时间对外部HUB的端口进行一下枚举,单片机有空时做
-      for ( n = 0; n < 3; n ++ ) {  // 搜索外部HUB设备
-        if ( RootHubDev[n].DeviceType == DEV_HUB && RootHubDev[n].DeviceStatus >= ROOT_DEV_SUCCESS ) 
-        {
-          // 有效的外部HUB
-          SelectHubPort( n, 0 );  // 选择操作指定的ROOT-HUB端口,设置当前USB速度以及被操作设备的USB地址
-          s = HubPortEnum( n );  // 枚举指定ROOT-HUB端口上的外部HUB集线器的各个端口,检查各端口有无连接或移除事件
-          if ( s != USB_INT_SUCCESS ) {  // 可能是HUB断开了
-            printf( "HubPortEnum error = %02X\n", (UINT16)s );
-          }
-          SetUsbSpeed( TRUE );  // 默认为全速
-        }
-      }
+    else 
+    {
+        continue;  // 设备已经断开,继续等待
     }
-#endif
-    count++;
-    if ( count > 2 ) 
-      count = 0;
-    switch( count ) {
-        case 1:  // 用定时模拟主观需求,需要操作鼠标
-          // 在ROOT-HUB以及外部HUB各端口上搜索指定类型的设备所在的端口号
-          loc = SearchAllHubPort( DEV_MOUSE );
-          if ( loc != 0xFFFF ) {
-            // 找到了,如果有两个MOUSE如何处理?
-            n = loc >> 8;
-            loc &= 0xFF;
-            printf( "Query Mouse\n" );
-            SelectHubPort( n, loc );  
-            // 选择操作指定的ROOT-HUB端口,设置当前USB速度以及被操作设备的USB地址
-            i = loc ? DevOnHubPort[n][loc-1].GpVar : RootHubDev[n].GpVar;  // 中断端点的地址,位7用于同步标志位
-            if ( i > 0 ) {
-              // 端点有效
-              s = HostTransact374( i | 0x80, DEF_USB_PID_IN, i & 0x80 );  // CH374传输事务,获取数据
-              if ( s == USB_INT_SUCCESS ) {
-                i ^= 0x80;  // 同步标志翻转
-                if ( loc )
-                  DevOnHubPort[n][loc-1].GpVar = i;  // 保存同步标志位
-                else RootHubDev[n].GpVar = i;
-                i = Read374Byte( REG_USB_LENGTH );  // 接收到的数据长度
-                if ( i ) {
-                  Read374Block( RAM_HOST_RECV, i, TempBuf );  // 取出数据并打印
-                  USB_SIL_Write(EP2_IN, (uint8_t*) TempBuf, i);  
-                  SetEPTxValid(ENDP2);
-                }
-              }
-              else if ( s != ( 0x20 | USB_INT_RET_NAK ) )
-                printf("Mouse error %02x\n",(UINT16)s);  // 可能是断开了
-            }
-            else
-              printf("Mouse no interrupt endpoint\n");
-            SetUsbSpeed( TRUE );  // 默认为全速
-        }
-        break;
-      case 2:   //search for keyboard port
-        loc = SearchAllHubPort(DEV_KEYBOARD);
-        if(loc != 0xFFFF){
-          n = loc >> 8;
-          loc &= 0xFF;
-          printf( "Query Keyboard\n" );
-          SelectHubPort( n, loc );
-          in_endpoint = loc ? DevOnHubPort[n][loc-1].GpVar : RootHubDev[n].GpVar;
-//          status = Set_Idle(); //设置IDLE，这个步骤是按照HID类的协议来做的
-          status = USB_INT_SUCCESS;
-          if(status != USB_INT_SUCCESS) {
-            printf("Set_Idle_Err=%02x\n",(unsigned short)status);
-            if((status & 0x0f) == USB_INT_RET_STALL)  
-              goto next_operate1; //返回STALL可能本身不支持
-          }
-          else 
-            printf("Set_idle success\n");
+        Delay(50);
+    status = GetDeviceDescr(DeviceDescBuf);  // 获取设备描述符
+    if ( status != USB_INT_SUCCESS ) {
+       goto WaitDeviceOut;  // 终止操作,等待USB设备拔出
+    }
+    device_desc = (PUSB_DEV_DESCR)DeviceDescBuf;
+    for ( i = 0; i < ( (PUSB_SETUP_REQ)SetupGetDevDescr)->wLengthL; i++ )
+      printf( "%02X ", (UINT16)( DeviceDescBuf[i]));
+    status = SetUsbAddress( 0x02 );  // 设置USB设备地址
+    if ( status != USB_INT_SUCCESS ) {
+            goto WaitDeviceOut;  // 终止操作,等待USB设备拔出
+    }
+
+    status = GetConfigDescr(ConfigDescBuf);  // 获取配置描述符
+    if ( status != USB_INT_SUCCESS ) {
+            goto WaitDeviceOut;  // 终止操作,等待USB设备拔出
+    }
+    for ( i = 0; i < ( (PUSB_CFG_DESCR)ConfigDescBuf)->wTotalLengthL; i++ ) 
+      printf( "%02X ", (UINT16)( ConfigDescBuf[i]));
+/* 分析配置描述符，获取端点数据/各端点地址/各端点大小等，更新变量endp_addr和endp_size等 */
+    
+    printf( "SetUsbConfig: " );
+    status = SetUsbConfig(((PUSB_CFG_DESCR)ConfigDescBuf) ->bConfigurationValue );  // 设置USB设备配置
+    if ( status != USB_INT_SUCCESS ) {
+        printf( "ERROR = %02X\n", (UINT16)status);
+        goto WaitDeviceOut;  // 终止操作,等待USB设备拔出
+    }
+    //-------------以下进行HID类的简单操作-----------------------//
+    status = Set_Idle( ); //设置IDLE，这个步骤是按照HID类的协议来做的
+    if(status != USB_INT_SUCCESS)
+    {
+      printf("Set_Idle_Err=%02x\n",(unsigned short)status);
+      if((status & 0x0f) == USB_INT_RET_STALL)  
+        goto next_operate1; //返回STALL可能本身不支持
+    }
+    else 
+      printf("Set_idle success\n");
 next_operate1:
-//          printf("Get Hid Descriptors\n");
-//          status = Get_Hid_Des(HidDescBuf);  // 获取报告描述符描述符
-          status = USB_INT_SUCCESS;
-          if(status == USB_INT_SUCCESS)
-          {
-            printf("HID_Desc: ");
-            for(i=0;i < hid_des_leng;i++)
-              printf("%02x ",(unsigned short)HidDescBuf[i]);
-            printf("\n");
-            printf("Set_Report \n"); //对于键盘发Set_Report来点亮灯,对于鼠标则不需要这一步
-            
-            status = Interrupt_Data_Trans(0x80|in_endpoint,HidDataBuf,&HIDCount);
-next_operate2:
-            if(status == USB_INT_SUCCESS)
-            {
-              USB_SIL_Write(EP1_IN, (uint8_t*) HidDataBuf, HIDCount);  
-              SetEPTxValid(ENDP1);
-              keyboard_key = HandleKeyBoardKeyVal(HidDataBuf);
-              if(DUMMY_KEY != keyboard_key) {
-                ProcessKeyBoardVal(keyboard_key,bootmode);
-              }
-            }
-          }
-          if(OutPacket_Len > 0) {
-            Set_Report(Receive_Buffer);
-            OutPacket_Len = 0;
-          }
-        }
-        break;
-      default:break;
+    printf("Get Hid Descriptors\n");
+    status = Get_Hid_Des(HidDescBuf);  // 获取报告描述符描述符
+    if(status == USB_INT_SUCCESS)
+    {
+      printf("HID_Desc: ");
+      for(i=0;i < hid_des_leng;i++)
+        printf("%02x ",(unsigned short)HidDescBuf[i]);
+      printf("\n");
     }
+    else
+    {
+      goto WaitDeviceOut;                             //出错退出
+    }
+    printf("Set_Report \n"); //对于键盘发Set_Report来点亮灯,对于鼠标则不需要这一步
+    SetReportBuf[0]=0x01;
+    status =Set_Report(SetReportBuf); //设置报表
+    if(status == USB_INT_SUCCESS)   
+    {
+      printf("Set_Report success\n");
+    }
+    else
+    {
+      printf("Set_Report Err=%02x\n",(unsigned short)status);      //设置报告出错
+      if((status & 0x0f) == USB_INT_RET_STALL)  
+        goto next_operate2;      //返回STALL可能本身不支持		  
+    }
+next_operate2:
+// 下面开始读取数据 ( 实际在读取数据的时候，要先发送中断端点的令牌来读取数据，接着才能获取到数据 )
+    tog1=FALSE;                                  //开始取DATA0
+    while(1)
+    {
+      status = Interrupt_Data_Trans(0x80|endp_in_addr,HidDataBuf,&HIDCount);
+      if(status == USB_INT_SUCCESS)
+      {
+        printf("%02x",HidDataBuf[0]);
+      }
+      HandleMisc();
+    }
+        /* Now the device is ready */
+WaitDeviceOut:  // 等待USB设备拔出
+    printf("Wait Device Out\n");
+    while (1) {
+      ProcessMiscDev();
+      if ( Query374Interrupt()) HostDetectInterrupt( );  // 如果有USB主机中断则处理
+      if ( Query374DeviceIn( ) == FALSE ) break;  // 没有USB设备
+    }
+    Delay( 100 );  // 等待设备完全断开，消除插拔抖动
+    if ( Query374DeviceIn( ) ) goto WaitDeviceOut;  // 没有完全断开
   }
 }
 
