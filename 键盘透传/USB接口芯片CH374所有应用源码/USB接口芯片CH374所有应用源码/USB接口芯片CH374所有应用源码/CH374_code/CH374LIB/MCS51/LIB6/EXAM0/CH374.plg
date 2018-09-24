@@ -1,0 +1,21 @@
+<html>
+<body>
+<pre>
+<h1>µVision3 Build Log</h1>
+<h2>Project:</h2>
+E:\PROJECT\CH374\HFI\C12\LIB6\EXAM0\CH374.uv2
+Project File Date:  09/21/2006
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling CH374.C...
+compiling HOST.C...
+compiling DEVICE.C...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?CH374FILEMODIFY?CH374MAI
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?CH374BYTELOCATE?CH374BYT
+Program Size: data=138.4 xdata=568 code=13694
+creating hex file from "CH374"...
+"CH374" - 0 Error(s), 2 Warning(s).

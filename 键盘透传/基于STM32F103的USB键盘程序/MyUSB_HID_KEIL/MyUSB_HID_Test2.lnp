@@ -1,0 +1,4 @@
+--device DARMSTM "stm32f10x_vector.o" "cortexm3_macro.o" "hw_config.o" "main.o" "usb_desc.o" "usb_endp.o" "usb_istr.o" "usb_prop.o" "usb_pwr.o" "stm32f10x_it.o" "stm32f10x_gpio.o" "stm32f10x_nvic.o" "stm32f10x_rcc.o" "stm32f10x_tim.o" "stm32f10x_flash.o" "stm32f10x_bkp.o" "stm32f10x_exti.o" "usb_core.o" "usb_init.o" "usb_int.o" "usb_mem.o" "usb_regs.o" --strict --scatter "MyUSB_HID_Test2.sct" 
+--autoat --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
+--info sizes --info totals --info unused --info veneers 
+ --list ".\MyUSB_HID_Test2.map" -o "MyUSB_HID_Test2.axf"

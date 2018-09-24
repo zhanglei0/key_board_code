@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Project>
+  <Desktop>
+    <Static>
+      <Debug-Log>
+        
+        
+      <PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>Build</Factory></Window><Window><Factory>Select-Ambiguous-Definitions</Factory></Window><Window><Factory>Find-in-Files</Factory></Window></Windows></PreferedWindows><ColumnWidth0>33</ColumnWidth0><ColumnWidth1>1848</ColumnWidth1></Debug-Log>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>33</ColumnWidth0><ColumnWidth1>1386</ColumnWidth1><ColumnWidth2>369</ColumnWidth2><ColumnWidth3>92</ColumnWidth3><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>Debug-Log</Factory></Window><Window><Factory>Select-Ambiguous-Definitions</Factory></Window><Window><Factory>Find-in-Files</Factory></Window></Windows></PreferedWindows></Build>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>261</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Disassembly>
+        <col-names>
+          
+          
+        <item>Disassembly</item><item>_I0</item></col-names>
+        <col-widths>
+          
+          
+        <item>500</item><item>20</item></col-widths>
+        <DisasmHistory/>
+        
+        
+      <PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><ShowCodeCoverage>1</ShowCodeCoverage><ShowInstrProfiling>1</ShowInstrProfiling></Disassembly>
+    <Select-Ambiguous-Definitions><ColumnWidth0>664</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>1138</ColumnWidth2><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>Debug-Log</Factory></Window><Window><Factory>Build</Factory></Window><Window><Factory>Find-in-Files</Factory></Window></Windows></PreferedWindows></Select-Ambiguous-Definitions><Find-in-Files><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>Debug-Log</Factory></Window><Window><Factory>Build</Factory></Window><Window><Factory>Select-Ambiguous-Definitions</Factory></Window></Windows></PreferedWindows><ColumnWidth0>569</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>854</ColumnWidth2><ColumnWidth3>379</ColumnWidth3></Find-in-Files><WATCH_1><expressions><item>HidDataBuf</item><item/></expressions><col-names><item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names><col-widths><item>100</item><item>150</item><item>100</item><item>100</item></col-widths><PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows></WATCH_1><Register><RegFindHistory/><PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows></Register><Memory><PreferedWindows><Position>3</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><FindAsHex>0</FindAsHex><MemGotoHistory><item>0x080013ac</item><item>0x200010d8</item></MemGotoHistory></Memory><StaticWatch><expressions><item>Interface_report</item><item>Interface_config</item><item>pInformation</item><item/></expressions><col-names><item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names><col-widths><item>182</item><item>150</item><item>100</item><item>100</item></col-widths><PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows></StaticWatch><Locals><PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><col-names><item>Location</item><item>Type</item><item>Value</item><item>Variable</item></col-names><col-widths><item>150</item><item>100</item><item>100</item><item>100</item></col-widths></Locals></Static>
+    <Windows>
+      
+      
+      
+    <Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-18464-31730</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>CH374</ExpandedNode><ExpandedNode>CH374/Custom_HID</ExpandedNode><ExpandedNode>CH374/Custom_HID/src</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd4><Tabs><Tab><Identity>TabID-18729-13911</Identity><TabName>Find in Files</TabName><Factory>Find-in-Files</Factory><Session/></Tab><Tab><Identity>TabID-5221-16416</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab></Tabs><SelectedTab>1</SelectedTab></Wnd4><Wnd5><Tabs><Tab><Identity>TabID-14664-21108</Identity><TabName>Register</TabName><Factory>Register</Factory><Session><REG1>0</REG1><REG2>0</REG2><Group>17</Group><States>1</States><State0>GPIOA_IDR</State0></Session></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd5></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\src\usb_pwr.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>152</SelStart2><SelEnd2>152</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\STM32_USB-FS-Device_Driver\src\usb_core.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>912</YPos2><SelStart2>27313</SelStart2><SelEnd2>27313</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\STM32_USB-FS-Device_Driver\inc\usb_init.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>49</YPos2><SelStart2>3090</SelStart2><SelEnd2>3090</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\STM32_USB-FS-Device_Driver\inc\usb_core.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>224</YPos2><SelStart2>9321</SelStart2><SelEnd2>9331</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\src\usb_endp.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>68</YPos2><SelStart2>3631</SelStart2><SelEnd2>3631</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\src\hw_config.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>21</YPos2><SelStart2>258</SelStart2><SelEnd2>258</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\STM32_USB-FS-Device_Driver\inc\usb_regs.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>86</YPos2><SelStart2>4176</SelStart2><SelEnd2>4182</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\src\usb_istr.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\STM32F10x_StdPeriph_Driver\inc\stm32f10x_spi.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>200</YPos2><SelStart2>7534</SelStart2><SelEnd2>7557</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\CH374U\ch374.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>94</YPos2><SelStart2>2763</SelStart2><SelEnd2>2763</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Application\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>183</YPos2><SelStart2>5634</SelStart2><SelEnd2>5634</SelEnd2></Tab><ActiveTab>10</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\STM32_USB-FS-Device_Driver\src\usb_sil.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>82</YPos2><SelStart2>4681</SelStart2><SelEnd2>4681</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\inc\usb_conf.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>75</YPos2><SelStart2>3724</SelStart2><SelEnd2>3724</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\src\usb_prop.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>197</YPos2><SelStart2>7541</SelStart2><SelEnd2>7541</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\src\usb_desc.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>132</YPos2><SelStart2>6876</SelStart2><SelEnd2>6876</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Custom_HID\inc\usb_desc.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>48</YPos2><SelStart2>3273</SelStart2><SelEnd2>3273</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Application\port.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>209</YPos2><SelStart2>5774</SelStart2><SelEnd2>5774</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Application\port.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>187</YPos2><SelStart2>6313</SelStart2><SelEnd2>6313</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-01C55520><key>iaridepm.enu1</key></Toolbar-01C55520></Sizes></Row0><Row1><Sizes><Toolbar-07BF1488><key>debuggergui.enu1</key></Toolbar-07BF1488></Sizes></Row1><Row2><Sizes><Toolbar-07BF1550><key>armjlink2.enu1</key></Toolbar-07BF1550></Sizes></Row2></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>373</Bottom><Right>352</Right><x>-2</x><y>-2</y><xscreen>142</xscreen><yscreen>137</yscreen><sizeHorzCX>103953</sizeHorzCX><sizeHorzCY>199708</sizeHorzCY><sizeVertCX>259151</sizeVertCX><sizeVertCY>546647</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes><Wnd5><Rect><Top>-2</Top><Left>-2</Left><Bottom>373</Bottom><Right>325</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>146413</sizeHorzCX><sizeHorzCY>291545</sizeHorzCY><sizeVertCX>239385</sizeVertCX><sizeVertCY>546647</sizeVertCY></Rect></Wnd5></Sizes></Row0></Right><Bottom><Row0><Sizes><Wnd4><Rect><Top>-2</Top><Left>-2</Left><Bottom>220</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>222</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>323615</sizeHorzCY><sizeVertCX>146413</sizeVertCX><sizeVertCY>291545</sizeVertCY></Rect></Wnd4></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Project>
+
+

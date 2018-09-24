@@ -1,0 +1,14 @@
+Removed Pin From Net: NetName=VCC Pin=U4-4
+Removed Pin From Net: NetName=GND Pin=X1-GND
+Removed Pin From Net: NetName=GND Pin=X1-GND
+Removed Pin From Net: NetName=GND Pin=Y1-GND
+Removed Pin From Net: NetName=GND Pin=Y1-GND
+Added Component: Designator=R50(0402S)
+Added Component: Designator=R51(0402S)
+Added Pin To Net: NetName=GND Pin=R50-1
+Added Pin To Net: NetName=LED1 Pin=R50-2
+Added Pin To Net: NetName=GND Pin=R51-1
+Added Pin To Net: NetName=LED0 Pin=R51-2
+Added Pin To Net: NetName=GND Pin=U2-20
+Added Member To Class: ClassName=Í¸´«°å Member=Component R50 1M
+Added Member To Class: ClassName=Í¸´«°å Member=Component R51 1M

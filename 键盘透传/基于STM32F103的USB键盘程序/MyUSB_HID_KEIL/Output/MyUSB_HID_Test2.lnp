@@ -1,0 +1,26 @@
+--cpu Cortex-M3
+".\output\stm32f10x_vector.o"
+".\output\cortexm3_macro.o"
+".\output\hw_config.o"
+".\output\main.o"
+".\output\usb_desc.o"
+".\output\usb_endp.o"
+".\output\usb_istr.o"
+".\output\usb_prop.o"
+".\output\usb_pwr.o"
+".\output\stm32f10x_it.o"
+".\output\stm32f10x_gpio.o"
+".\output\stm32f10x_nvic.o"
+".\output\stm32f10x_rcc.o"
+".\output\stm32f10x_tim.o"
+".\output\stm32f10x_flash.o"
+".\output\stm32f10x_exti.o"
+".\output\usb_core.o"
+".\output\usb_init.o"
+".\output\usb_int.o"
+".\output\usb_mem.o"
+".\output\usb_regs.o"
+--strict --scatter ".\Output\MyUSB_HID_Test2.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\MyUSB_HID_Test2.map" -o .\Output\MyUSB_HID_Test2.axf

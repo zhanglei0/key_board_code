@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=XI Pin=X1-1
+Removed Pin From Net: NetName=XO Pin=X1-2
+Change Component Footprint: Designator=C10 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C11 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=X1 Old Footprint=XTAL New Footprint=3225_нчт╢
+Change Component Comment : Designator=X1 Old Comment=24MHZ New Comment=XTAL
+Added Pin To Net: NetName=XO Pin=X1-1
+Added Pin To Net: NetName=XI Pin=X1-2

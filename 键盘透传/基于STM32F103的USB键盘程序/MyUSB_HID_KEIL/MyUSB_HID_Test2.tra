@@ -1,0 +1,40 @@
+*** Creating Trace Output File 'MyUSB_HID_Test2.tra' Ok.
+### Preparing for ADS-LD.
+### Creating ADS-LD Command Line
+### List of Objects: adding '"stm32f10x_vector.o"'
+### List of Objects: adding '"cortexm3_macro.o"'
+### List of Objects: adding '"hw_config.o"'
+### List of Objects: adding '"main.o"'
+### List of Objects: adding '"usb_desc.o"'
+### List of Objects: adding '"usb_endp.o"'
+### List of Objects: adding '"usb_istr.o"'
+### List of Objects: adding '"usb_prop.o"'
+### List of Objects: adding '"usb_pwr.o"'
+### List of Objects: adding '"stm32f10x_it.o"'
+### List of Objects: adding '"stm32f10x_gpio.o"'
+### List of Objects: adding '"stm32f10x_nvic.o"'
+### List of Objects: adding '"stm32f10x_rcc.o"'
+### List of Objects: adding '"stm32f10x_tim.o"'
+### List of Objects: adding '"stm32f10x_flash.o"'
+### List of Objects: adding '"stm32f10x_bkp.o"'
+### List of Objects: adding '"stm32f10x_exti.o"'
+### List of Objects: adding '"usb_core.o"'
+### List of Objects: adding '"usb_init.o"'
+### List of Objects: adding '"usb_int.o"'
+### List of Objects: adding '"usb_mem.o"'
+### List of Objects: adding '"usb_regs.o"'
+### ADS-LD Command completed:
+--device DARMSTM "stm32f10x_vector.o" "cortexm3_macro.o" "hw_config.o" "main.o" "usb_desc.o" "usb_endp.o" "usb_istr.o" "usb_prop.o" "usb_pwr.o" "stm32f10x_it.o" "stm32f10x_gpio.o" "stm32f10x_nvic.o" "stm32f10x_rcc.o" "stm32f10x_tim.o" "stm32f10x_flash.o" "stm32f10x_bkp.o" "stm32f10x_exti.o" "usb_core.o" "usb_init.o" "usb_int.o" "usb_mem.o" "usb_regs.o" --strict --scatter "MyUSB_HID_Test2.sct" 
+--autoat --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
+--info sizes --info totals --info unused --info veneers 
+ --list ".\MyUSB_HID_Test2.map" -o "MyUSB_HID_Test2.axf"### Preparing Environment (PrepEnvAds)
+### ADS-LD Output File: 'MyUSB_HID_Test2.axf'
+### ADS-LD Command File: 'MyUSB_HID_Test2.lnp'
+### Checking for dirty Components...
+### Creating CmdFile 'MyUSB_HID_Test2.lnp', Handle=0x000002D0
+### Writing '.lnp' file
+### ADS-LD Command file 'MyUSB_HID_Test2.lnp' is ready.
+### ADS-LD: About to start ADS-LD Thread.
+### ADS-LD: executed with 0 errors
+### Updating obj list
+### LDADS_file() completed.

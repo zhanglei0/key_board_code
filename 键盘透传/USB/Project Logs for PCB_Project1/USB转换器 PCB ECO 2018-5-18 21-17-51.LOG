@@ -1,0 +1,25 @@
+Change Component Footprint: Designator=C1 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C6 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C7 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C16 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C17 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C18 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C19 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=C20 Old Footprint=0805 New Footprint=0402S
+Change Component Footprint: Designator=R1 Old Footprint=0805 New Footprint=0402S
+Added Component: Designator=C2(0402S)
+Added Component: Designator=C3(0402S)
+Added Component: Designator=R2(0402S)
+Added Component: Designator=R3(0402S)
+Added Pin To Net: NetName=USB_DM Pin=C2-1
+Added Pin To Net: NetName=GND Pin=C2-2
+Added Pin To Net: NetName=USB_DP Pin=C3-1
+Added Pin To Net: NetName=GND Pin=C3-2
+Added Pin To Net: NetName=NetR2_1 Pin=R2-1
+Added Pin To Net: NetName=USB_DM Pin=R2-2
+Added Pin To Net: NetName=NetR3_1 Pin=R3-1
+Added Pin To Net: NetName=USB_DP Pin=R3-2
+Added Member To Class: ClassName=Í¸´«°å Member=Component C2 10pF
+Added Member To Class: ClassName=Í¸´«°å Member=Component C3 10pF
+Added Member To Class: ClassName=Í¸´«°å Member=Component R2 Res1
+Added Member To Class: ClassName=Í¸´«°å Member=Component R3 Res1

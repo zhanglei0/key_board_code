@@ -1,0 +1,688 @@
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 1   
+
+
+C51 COMPILER V7.06, COMPILATION OF MODULE HOST
+OBJECT MODULE PLACED IN HOST.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE HOST.C ROM(COMPACT) DEBUG OBJECTEXTEND
+
+stmt level    source
+
+   1          /* CH374Ğ¾Æ¬ Ó¦ÓÃ²ã V1.0 */
+   2          /* USBÖ÷»ú,³õÊ¼»¯ºÍÃ¶¾Ùµ±Ç°Á¬½ÓµÄUSBÉè±¸ */
+   3          
+   4          #include        <stdio.h>
+   5          #include        <string.h>
+   6          #include        "HAL.H"                  // ÒÔMCS51ÎªÀı£¬ÆäËüµ¥Æ¬»úĞèĞŞ¸ÄHAL*Ó²¼ş³éÏó²ãµÄ¼¸¸öÎÄ¼ş
+   7          #include        "HAL_BASE.C"     // »ù±¾×Ó³ÌĞò¼°ÖĞ¶Ï²éÑ¯×Ó³ÌĞò
+   8          
+   9          /* Ó²¼ş½Ó¿Ú²ã,ÒÔÏÂÁ¬½Ó·½Ê½ÈÎÑ¡Ò»ÖÖ */
+  10          #include "PARA_HW.C"        //Ó²¼ş±ê×¼8Î»²¢¿Ú
+  11          //#include "..\PARA_SW.C"       // Èí¼şI/OÄ£Äâ8Î»²¢¿Ú 
+  12          //#include "..\SPI_HW.C"        // Ó²¼ş±ê×¼4ÏßSPI´®¿Ú 
+  13          //#include "SPI_SW.C"           // Èí¼şI/OÄ£Äâ4ÏßSPI´®¿Ú 
+  14          //#include "SPI3_SW.C"      // Èí¼şI/OÄ£Äâ3ÏßSPI´®¿Ú,SDOºÍSDIºÏÓÃÒ»¸öÒı½Å 
+  15          
+  16          /* »ñÈ¡Éè±¸ÃèÊö·û */
+  17          const   UINT8C  SetupGetDevDescr[] = { 0x80, 0x06, 0x00, 0x01, 0x00, 0x00, 0x12, 0x00 };
+  18          /* »ñÈ¡ÅäÖÃÃèÊö·û */
+  19          const   UINT8C  SetupGetCfgDescr[] = { 0x80, 0x06, 0x00, 0x02, 0x00, 0x00, 0x04, 0x00 };
+  20          /* ÉèÖÃUSBµØÖ· */
+  21          const   UINT8C  SetupSetUsbAddr[] = { 0x00, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  22          /* ÉèÖÃUSBÅäÖÃ */
+  23          const   UINT8C  SetupSetUsbConfig[] = { 0x00, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  24          /* SET IDLE */
+  25          unsigned char code SetupSetidle[]={0x21,0x0a,0x00,0x00,0x00,0x00,0x00,0x00};        
+  26          /* »ñÈ¡HID ±¨¸æÃèÊö·û */
+  27          unsigned char code SetupGetHidDes[]={0x81,0x06,0x00,0x22,0x00,0x00,0x81,0x00};    
+  28          /* SET REPORT */
+  29          unsigned char code SetupSetReport[]={0x21,0x09,0x00,0x02,0x00,0x00,0x01,0x00};     
+  30          
+  31          /* ³£\±äÁ¿¶¨Òå:*/
+  32           
+  33          // BOOL     Set_Report_flag;   //Set_Report ·¢ËÍ±êÖ¾,Ö»ÒªÓÃÀ´µãÁÁ¡¢Ï¨Ãğ¼üÅÌÉÏµÄµÆ £¨Set_Report_flag=1Ê±,´ú
+             -±íÁÁ£©
+  34          BOOL     LOW_SPEED_BIT;
+  35          BOOL     tog1;              //¶ÁÈ¡Êı¾İÊ±µÄÍ¬²½±êÖ¾
+  36          UINT8    endp_out_addr;     // out¶ËµãµØÖ·,ÓÉÓÚÒ»°ãÊó±ê¼üÅÌ²»Ö§³Öout¶Ëµã,Ò»°ãÓÃ²»µ½ 
+  37          UINT8    endp_in_addr;          // in ¶ËµãµØÖ· 
+  38          UINT8    hid_des_leng;      // HIDÀà±¨¸æÃèÊö·ûµÄ³¤¶È
+  39          UINT8    endp_num;          // Êı¾İ hid Àà¼üÅÌ¡¢Êó±êµÄ¶ËµãÊıÄ¿
+  40          UINT8    UsbDevEndpSize = DEFAULT_ENDP0_SIZE;   // USBÉè±¸µÄ¶Ëµã0µÄ×î´ó°ü³ß´ç 
+  41          UINT8    FlagDeviceStatus;                                              // µ±Ç°USBÉè±¸×´Ì¬£¬Í¨³£ÓÃÓÚÖĞ¶Ï·½Ê½µÄÈ«¾Ö±äÁ¿£¬±¾³ÌĞòÖĞÎ´Ê¹ÓÃ 
+  42          
+  43          /* CH374´«ÊäÊÂÎñ£¬ÊäÈëÄ¿µÄ¶ËµãµØÖ·/PIDÁîÅÆ/Í¬²½±êÖ¾£¬·µ»ØÍ¬CH375£¬NAK²»ÖØÊÔ£¬³¬Ê±/³ö´íÖØÊÔ  */
+  44          UINT8   HostTransact374( UINT8 endp_addr, UINT8 pid, BOOL tog );
+  45          
+  46          /* CH374´«ÊäÊÂÎñ£¬ÊäÈëÄ¿µÄ¶ËµãµØÖ·/PIDÁîÅÆ/Í¬²½±êÖ¾/ÒÔmSÎªµ¥Î»µÄNAKÖØÊÔ×ÜÊ±¼ä(0xFFFFÎŞÏŞÖØÊÔ)£¬·µ»ØÍ¬CH375
+             -£¬NAKÖØÊÔ£¬³¬Ê±³ö´íÖØÊÔ */
+  47          UINT8   WaitHostTransact374( UINT8 endp_addr, UINT8 pid, BOOL tog, UINT16 timeout );
+  48          
+  49          /* Ö´ĞĞ¿ØÖÆ´«Êä,ReqBufÖ¸Ïò8×Ö½ÚÇëÇóÂë,DatBufÎªÊÕ·¢»º³åÇø */
+  50          // Èç¹ûĞèÒª½ÓÊÕºÍ·¢ËÍÊı¾İ£¬ÄÇÃ´DatBufĞèÖ¸ÏòÓĞĞ§»º³åÇøÓÃÓÚ´æ·ÅºóĞøÊı¾İ£¬Êµ¼Ê³É¹¦ÊÕ·¢µÄ×Ü³¤¶È±£´æÔÚReqLenÖ¸Ï
+             -òµÄ×Ö½Ú±äÁ¿ÖĞ
+  51          UINT8   HostCtrlTransfer374( PUINT8 ReqBuf, PUINT8 DatBuf, PUINT8 RetLen );  
+  52          
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 2   
+
+  53          /* ²éÑ¯µ±Ç°ÊÇ·ñ´æÔÚUSBÉè±¸ */
+  54          //BOOL  Query374DeviceIn( void );
+  55          #define Query374DeviceIn( )     ( ( Read374Byte( REG_INTER_FLAG ) & BIT_IF_DEV_ATTACH ) ? TRUE : FALSE )
+  56          
+  57          /* ²éÑ¯µ±Ç°µÄUSBÉè±¸ÊÇÈ«ËÙ»¹ÊÇµÍËÙ, ·µ»ØTRUEÎªÈ«ËÙ */
+  58          //BOOL  Query374DevFullSpeed( void );
+  59          #define Query374DevFullSpeed( ) ( ( Read374Byte( REG_SYS_INFO ) & BIT_INFO_USB_DP ) ? TRUE : FALSE )
+  60          
+  61          void    HostDetectInterrupt( void );        // ´¦ÀíUSBÉè±¸²å°ÎÊÂ¼şÖĞ¶Ï
+  62          
+  63          void    SetHostUsbAddr( UINT8 addr );       // ÉèÖÃUSBÖ÷»úµ±Ç°²Ù×÷µÄUSBÉè±¸µØÖ·
+  64          
+  65          void    HostSetBusFree( void );             // USB×ÜÏß¿ÕÏĞ
+  66          
+  67          void    HostSetBusReset( void );            // USB×ÜÏß¸´Î»
+  68          
+  69          void    HostSetFullSpeed( void );           // Éè¶¨È«ËÙUSBÉè±¸ÔËĞĞ»·¾³
+  70          
+  71          void    HostSetLowSpeed( void );            // Éè¶¨µÍËÙUSBÉè±¸ÔËĞĞ»·¾³
+  72          
+  73          void    Init374Host( void );                // ³õÊ¼»¯USBÖ÷»ú
+  74          
+  75          UINT8   GetDeviceDescr( PUINT8 buf );       // »ñÈ¡Éè±¸ÃèÊö·û
+  76          
+  77          UINT8   GetConfigDescr( PUINT8 buf );       // »ñÈ¡ÅäÖÃÃèÊö·û
+  78          
+  79          UINT8   SetUsbAddress( UINT8 addr );        // ÉèÖÃUSBÉè±¸µØÖ·
+  80          
+  81          UINT8   SetUsbConfig( UINT8 cfg );          // ÉèÖÃUSBÉè±¸ÅäÖÃ
+  82          
+  83          /* CH374´«ÊäÊÂÎñ£¬ÊäÈëÄ¿µÄ¶ËµãµØÖ·/PIDÁîÅÆ/Í¬²½±êÖ¾£¬·µ»ØÍ¬CH375£¬NAK²»ÖØÊÔ£¬³¬Ê±/³ö´íÖØÊÔ */
+  84          UINT8   HostTransact374( UINT8 endp_addr, UINT8 pid, BOOL tog )
+  85          {  // ±¾×Ó³ÌĞò×ÅÖØÓÚÒ×Àí½â,¶øÔÚÊµ¼ÊÓ¦ÓÃÖĞ,ÎªÁËÌá¹©ÔËĞĞËÙ¶È,Ó¦¸Ã¶Ô±¾×Ó³ÌĞò´úÂë½øĞĞÓÅ»¯
+  86   1              UINT8   retry;
+  87   1              UINT8   s, r, u;
+  88   1              for ( retry = 0; retry < 3; retry ++ ) {
+  89   2                      Write374Byte( REG_USB_H_PID, M_MK_HOST_PID_ENDP( pid, endp_addr ) );  // Ö¸¶¨ÁîÅÆPIDºÍÄ¿µÄ¶ËµãºÅ
+  90   2      //              Write374Byte( REG_USB_H_CTRL, BIT_HOST_START | ( tog ? ( BIT_HOST_TRAN_TOG | BIT_HOST_RECV_TOG ) : 0x0
+             -0 ) );  // ÉèÖÃÍ¬²½±êÖ¾²¢Æô¶¯´«Êä
+  91   2                      Write374Byte( REG_USB_H_CTRL, ( tog ? ( BIT_HOST_START | BIT_HOST_TRAN_TOG | BIT_HOST_RECV_TOG ) : BIT_H
+             -OST_START ) );  // ÉèÖÃÍ¬²½±êÖ¾²¢Æô¶¯´«Êä
+  92   2      //              Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE );  // È¡ÏûÔİÍ£
+  93   2      //      mDelayuS( 200 );
+  94   2                      s = Wait374Interrupt( );
+  95   2                      if ( s == ERR_USB_UNKNOWN ) return( s );        // ÖĞ¶Ï³¬Ê±,¿ÉÄÜÊÇÓ²¼şÒì³£
+  96   2                      s = Read374Byte( REG_INTER_FLAG );              // »ñÈ¡ÖĞ¶Ï×´Ì¬
+  97   2                      if ( s & BIT_IF_DEV_DETECT ) {                  // USBÉè±¸²å°ÎÊÂ¼ş
+  98   3                              mDelayuS( 200 );                            // µÈ´ı´«ÊäÍê³É
+  99   3                              Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE | BIT_IF_DEV_DETECT | BIT_IF_TRANSFER );  // ÇåÖĞ¶Ï±êÖ¾
+ 100   3                              if ( s & BIT_IF_DEV_ATTACH ) {              // USBÉè±¸Á¬½ÓÊÂ¼ş
+ 101   4                                      u = Read374Byte( REG_USB_SETUP );
+ 102   4                                      if ( s & BIT_IF_USB_DX_IN ) {           // ËÙ¶ÈÆ¥Åä£¬²»ĞèÒªÇĞ»»ËÙ¶È
+ 103   5                                              if ( u & BIT_SETP_USB_SPEED ) return( USB_INT_CONNECT_LS );  // µÍËÙUSBÉè±¸
+ 104   5                                              return( USB_INT_CONNECT );          // È«ËÙUSBÉè±¸
+ 105   5                                      }
+ 106   4                                      else {                                  // ËÙ¶ÈÊ§Åä£¬ĞèÒªÇĞ»»ËÙ¶È
+ 107   5                                              if ( u & BIT_SETP_USB_SPEED ) return( USB_INT_CONNECT );  // È«ËÙUSBÉè±¸
+ 108   5                                              return( USB_INT_CONNECT_LS );       // µÍËÙUSBÉè±¸
+ 109   5                                      }
+ 110   4                              }
+ 111   3                              else return( USB_INT_DISCONNECT );         // USBÉè±¸¶Ï¿ªÊÂ¼ş
+ 112   3                      }
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 3   
+
+ 113   2                      else if ( s & BIT_IF_TRANSFER ) {              // ´«ÊäÍê³É
+ 114   3                              Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE | BIT_IF_TRANSFER );  // ÇåÖĞ¶Ï±êÖ¾
+ 115   3                              s = Read374Byte( REG_USB_STATUS );        // USB×´Ì¬
+ 116   3                              r = s & BIT_STAT_DEV_RESP;                // USBÉè±¸Ó¦´ğ×´Ì¬
+ 117   3                              switch ( pid ) {
+ 118   4                                      case DEF_USB_PID_SETUP:
+ 119   4                                      case DEF_USB_PID_OUT:
+ 120   4                                              if ( r == DEF_USB_PID_ACK ) return( USB_INT_SUCCESS );
+ 121   4                                              else if ( r == DEF_USB_PID_STALL || r == DEF_USB_PID_NAK ) return( r | 0x20 );
+ 122   4                                              else if ( ! M_IS_HOST_TIMEOUT( s ) ) return( r | 0x20 );  // ²»ÊÇ³¬Ê±/³ö´í£¬ÒâÍâÓ¦´ğ
+ 123   4                                              break;
+ 124   4                                      case DEF_USB_PID_IN:
+ 125   4                                              if ( M_IS_HOST_IN_DATA( s ) ) {  // DEF_USB_PID_DATA0 or DEF_USB_PID_DATA1
+ 126   5                                                      if ( s & BIT_STAT_TOG_MATCH ) return( USB_INT_SUCCESS );  // ²»Í¬²½ÔòĞè¶ªÆúºóÖØÊÔ
+ 127   5                                              }
+ 128   4                                              else if ( r == DEF_USB_PID_STALL || r == DEF_USB_PID_NAK ) return( r | 0x20 );
+ 129   4                                              else if ( ! M_IS_HOST_TIMEOUT( s ) ) return( r | 0x20 );  // ²»ÊÇ³¬Ê±/³ö´í£¬ÒâÍâÓ¦´ğ
+ 130   4                                              break;
+ 131   4                                      default:
+ 132   4                                              return( ERR_USB_UNKNOWN );       // ²»¿ÉÄÜµÄÇé¿ö
+ 133   4                                              break;
+ 134   4                              }
+ 135   3                      }
+ 136   2                      else {                                       // ÆäËüÖĞ¶Ï,²»Ó¦¸Ã·¢ÉúµÄÇé¿ö
+ 137   3                              mDelayuS( 200 );                         // µÈ´ı´«ÊäÍê³É
+ 138   3                              Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE | BIT_IF_INTER_FLAG );  /* ÇåÖĞ¶Ï±êÖ¾ */
+ 139   3                              if ( retry ) return( ERR_USB_UNKNOWN );  // ²»ÊÇµÚÒ»´Î¼ì²âµ½Ôò·µ»Ø´íÎó
+ 140   3                      }
+ 141   2              }
+ 142   1              return( 0x20 );                                  // Ó¦´ğ³¬Ê±
+ 143   1      }
+ 144          
+ 145          /*  CH374´«ÊäÊÂÎñ£¬ÊäÈëÄ¿µÄ¶ËµãµØÖ·/PIDÁîÅÆ/Í¬²½±êÖ¾/ÒÔmSÎªµ¥Î»µÄNAKÖØÊÔ×ÜÊ±¼ä(0xFFFFÎŞÏŞÖØÊÔ)£¬·µ»ØÍ¬CH37
+             -5£¬NAKÖØÊÔ£¬³¬Ê±³ö´íÖØÊÔ */
+ 146          UINT8   WaitHostTransact374( UINT8 endp_addr, UINT8 pid, BOOL tog, UINT16 timeout )
+ 147          {
+ 148   1              UINT8   i, s;
+ 149   1              while ( 1 ) {
+ 150   2                      for ( i = 0; i < 40; i ++ ) {
+ 151   3                              s = HostTransact374( endp_addr, pid, tog );
+ 152   3                              if ( s != ( DEF_USB_PID_NAK | 0x20 ) || timeout == 0 ) return( s );
+ 153   3                              mDelayuS( 20 );
+ 154   3                      }
+ 155   2                      if ( timeout < 0xFFFF ) timeout --;
+ 156   2              }
+ 157   1      }
+ 158          
+ 159          /* Ö´ĞĞ¿ØÖÆ´«Êä,ReqBufÖ¸Ïò8×Ö½ÚÇëÇóÂë,DatBufÎªÊÕ·¢»º³åÇø */
+ 160          UINT8   HostCtrlTransfer374( PUINT8 ReqBuf, PUINT8 DatBuf, PUINT8 RetLen )  
+ 161          // Èç¹ûĞèÒª½ÓÊÕºÍ·¢ËÍÊı¾İ£¬ÄÇÃ´DatBufĞèÖ¸ÏòÓĞĞ§»º³åÇøÓÃÓÚ´æ·ÅºóĞøÊı¾İ£¬Êµ¼Ê³É¹¦ÊÕ·¢µÄ×Ü³¤¶È±£´æÔÚReqLenÖ¸Ï
+             -òµÄ×Ö½Ú±äÁ¿ÖĞ
+ 162          {
+ 163   1              UINT8   s, len, count, total;
+ 164   1              BOOL    tog;
+ 165   1              Write374Block( RAM_HOST_TRAN, 8, ReqBuf );
+ 166   1              Write374Byte( REG_USB_LENGTH, 8 );
+ 167   1              mDelayuS( 100 );
+ 168   1              s = WaitHostTransact374( 0, DEF_USB_PID_SETUP, FALSE, 200 );  // SETUP½×¶Î£¬200mS³¬Ê±
+ 169   1              if ( s == USB_INT_SUCCESS )              // SETUP³É¹¦
+ 170   1          {
+ 171   2                      tog = TRUE;                          // Ä¬ÈÏDATA1,Ä¬ÈÏÎŞÊı¾İ¹Ê×´Ì¬½×¶ÎÎªIN
+ 172   2                      if((*(ReqBuf+3))==0x22)
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 4   
+
+ 173   2              {
+ 174   3                              total=*( ReqBuf + 6 )-0x40;
+ 175   3                  }
+ 176   2                      else 
+ 177   2                              total = *( ReqBuf + 6 );
+ 178   2                      if ( total && DatBuf )               // ĞèÒªÊÕÊı¾İ
+ 179   2              {
+ 180   3                              len = total;
+ 181   3                              if ( *ReqBuf & 0x80 )           // ÊÕ
+ 182   3                  {
+ 183   4                                      while ( len ) 
+ 184   4                      {
+ 185   5                                              mDelayuS( 100 );
+ 186   5                                              s = WaitHostTransact374( 0, DEF_USB_PID_IN, tog, 200 );  // INÊı¾İ
+ 187   5                                              if ( s != USB_INT_SUCCESS ) break;
+ 188   5                                              count = Read374Byte( REG_USB_LENGTH );
+ 189   5                                              Read374Block( RAM_HOST_RECV, count, DatBuf );
+ 190   5                                              DatBuf += count;
+ 191   5                                              if ( count <= len ) len -= count;
+ 192   5                                              else len = 0;
+ 193   5                                              if ( count & ( UsbDevEndpSize - 1 ) ) break;  // ¶Ì°ü
+ 194   5                                              tog = tog ? FALSE : TRUE;
+ 195   5                                      }
+ 196   4                                      tog = FALSE;                // ×´Ì¬½×¶ÎÎªOUT
+ 197   4                              }
+ 198   3                              else {                          // ·¢
+ 199   4                                      while ( len ) 
+ 200   4                      {
+ 201   5                                              mDelayuS( 100 );
+ 202   5                                              count = len >= UsbDevEndpSize ? UsbDevEndpSize : len;
+ 203   5                                              Write374Block( RAM_HOST_TRAN, count, DatBuf );
+ 204   5                                              Write374Byte( REG_USB_LENGTH, count );
+ 205   5                                              s = WaitHostTransact374( 0, DEF_USB_PID_OUT, tog, 200 );  // OUTÊı¾İ
+ 206   5                                              if ( s != USB_INT_SUCCESS ) break;
+ 207   5                                              DatBuf += count;
+ 208   5                                              len -= count;
+ 209   5                                              tog = tog ? FALSE : TRUE;
+ 210   5                                      }
+ 211   4                                      tog = TRUE;                // ×´Ì¬½×¶ÎÎªIN
+ 212   4                              }
+ 213   3                              total -= len;                  // ¼õÈ¥Ê£Óà³¤¶ÈµÃÊµ¼Ê´«Êä³¤¶È
+ 214   3                      }
+ 215   2                      if ( s == USB_INT_SUCCESS )        // Êı¾İ½×¶Î³É¹¦
+ 216   2              {
+ 217   3                              Write374Byte( REG_USB_LENGTH, 0 );
+ 218   3                              mDelayuS( 100 );
+ 219   3                              s = WaitHostTransact374( 0, ( tog ? DEF_USB_PID_IN : DEF_USB_PID_OUT ), TRUE, 200 );  // STATUS½×¶Î
+ 220   3                              if ( tog && s == USB_INT_SUCCESS )    // ¼ì²éIN×´Ì¬·µ»ØÊı¾İ³¤¶È
+ 221   3                  {
+ 222   4                                      if ( Read374Byte( REG_USB_LENGTH ) ) s = USB_INT_BUF_OVER;  // ×´Ì¬½×¶Î´íÎó
+ 223   4                              }
+ 224   3                      }
+ 225   2              }
+ 226   1              if ( RetLen ) *RetLen = total;        // Êµ¼Ê³É¹¦ÊÕ·¢µÄ×Ü³¤¶È
+ 227   1              return( s );
+ 228   1      }
+ 229          
+ 230          /*Í¨¹ıÖĞ¶Ï¶Ëµã»ñÈ¡Êó±ê¡¢¼üÅÌÉÏ´«µÄÊı¾İ */
+ 231          unsigned char Interrupt_Data_Trans(unsigned char *p)
+ 232          {
+ 233   1              UINT8  s,count;
+ 234   1              s = WaitHostTransact374( endp_in_addr, DEF_USB_PID_IN, tog1, 1000 );  // INÊı¾İ
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 5   
+
+ 235   1      //    printf("s:%x \n",(unsigned short)s);
+ 236   1              if ( s != USB_INT_SUCCESS ) return s;
+ 237   1              else
+ 238   1          {   
+ 239   2                              count = Read374Byte( REG_USB_LENGTH );
+ 240   2                              Read374Block( RAM_HOST_RECV, count, p );
+ 241   2                              tog1 = tog1 ? FALSE : TRUE;
+ 242   2              }
+ 243   1              return s;
+ 244   1      }
+ 245          
+ 246          /* ²éÑ¯µ±Ç°ÊÇ·ñ´æÔÚUSBÉè±¸ */
+ 247          //BOOL  Query374DeviceIn( void )
+ 248          //#define       Query374DeviceIn( )     ( ( Read374Byte( REG_INTER_FLAG ) & BIT_IF_DEV_ATTACH ) ? TRUE : FALSE )
+ 249          
+ 250          /* ²éÑ¯µ±Ç°µÄUSBÉè±¸ÊÇÈ«ËÙ»¹ÊÇµÍËÙ, ·µ»ØTRUEÎªÈ«ËÙ */
+ 251          //BOOL  Query374DevFullSpeed( void )
+ 252          //#define       Query374DevFullSpeed( ) ( ( Read374Byte( REG_SYS_INFO ) & BIT_INFO_USB_DP ) ? TRUE : FALSE )
+ 253          
+ 254          /* ´¦ÀíUSBÉè±¸²å°ÎÊÂ¼şÖĞ¶Ï */
+ 255          void    HostDetectInterrupt( void )      
+ 256          {
+ 257   1              UINT8   s, u;
+ 258   1              s = Read374Byte( REG_INTER_FLAG );         // »ñÈ¡ÖĞ¶Ï×´Ì¬
+ 259   1              if ( s & BIT_IF_DEV_DETECT )               // USBÉè±¸²å°ÎÊÂ¼ş
+ 260   1          {
+ 261   2                      Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE | BIT_IF_DEV_DETECT );  // ÇåÖĞ¶Ï±êÖ¾
+ 262   2                      if ( s & BIT_IF_DEV_ATTACH )           // USBÉè±¸Á¬½ÓÊÂ¼ş
+ 263   2              {
+ 264   3                              u = Read374Byte( REG_USB_SETUP );
+ 265   3                              if ( s & BIT_IF_USB_DX_IN )        // ËÙ¶ÈÆ¥Åä£¬²»ĞèÒªÇĞ»»ËÙ¶È
+ 266   3                  {
+ 267   4                                      if ( u & BIT_SETP_USB_SPEED ) FlagDeviceStatus = USB_INT_CONNECT_LS;  // µÍËÙUSBÉè±¸
+ 268   4                                      else FlagDeviceStatus = USB_INT_CONNECT;  // È«ËÙUSBÉè±¸
+ 269   4                              }
+ 270   3                              else                              // ËÙ¶ÈÊ§Åä£¬ĞèÒªÇĞ»»ËÙ¶È
+ 271   3                  {
+ 272   4                                      if ( u & BIT_SETP_USB_SPEED ) FlagDeviceStatus = USB_INT_CONNECT;  // È«ËÙUSBÉè±¸
+ 273   4                                      else FlagDeviceStatus = USB_INT_CONNECT_LS;  // µÍËÙUSBÉè±¸
+ 274   4                              }
+ 275   3                      }
+ 276   2                      else FlagDeviceStatus = USB_INT_DISCONNECT;          // USBÉè±¸¶Ï¿ªÊÂ¼ş
+ 277   2              }
+ 278   1              else                                                     // ÒâÍâµÄÖĞ¶Ï
+ 279   1           { 
+ 280   2                      Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE | BIT_IF_TRANSFER | BIT_IF_USB_SUSPEND | BIT_IF_WAKE_UP )
+             -;  // ÇåÖĞ¶Ï±êÖ¾
+ 281   2              }
+ 282   1      }
+ 283          
+ 284          /* ÉèÖÃUSBÖ÷»úµ±Ç°²Ù×÷µÄUSBÉè±¸µØÖ· */
+ 285          void    SetHostUsbAddr( UINT8 addr )  
+ 286          {
+ 287   1              Write374Byte( REG_USB_ADDR, addr );
+ 288   1      }
+ 289          
+ 290           /* USB×ÜÏß¿ÕÏĞ */
+ 291          void    HostSetBusFree( void ) 
+ 292          {
+ 293   1      //      Write374Byte( REG_USB_SETUP, M_SET_USB_BUS_FREE( Read374Byte( REG_USB_SETUP ) ) );    // USB×ÜÏß¿ÕÏĞ
+ 294   1              Write374Byte( REG_USB_SETUP, BIT_SETP_HOST_MODE| BIT_SETP_AUTO_SOF );                 // USB×ÜÏß¸´Î»
+ 295   1      }
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 6   
+
+ 296          
+ 297          /* USB×ÜÏß¸´Î» */
+ 298          void    HostSetBusReset( void )  
+ 299          {
+ 300   1              UsbDevEndpSize = DEFAULT_ENDP0_SIZE;                                                // USBÉè±¸µÄ¶Ëµã0µÄ×î
+             -´ó°ü³ß´ç 
+ 301   1              SetHostUsbAddr( 0x00 );
+ 302   1              Write374Byte( REG_USB_H_CTRL, 0x00 );
+ 303   1      //      Write374Byte( REG_USB_SETUP, M_SET_USB_BUS_RESET( Read374Byte( REG_USB_SETUP ) & ~ BIT_SETP_AUTO_SOF ) 
+             -);  // USB×ÜÏß¸´Î»
+ 304   1              Write374Byte( REG_USB_SETUP, M_SET_USB_BUS_RESET( BIT_SETP_HOST_MODE ) );           // USB×ÜÏß¸´Î»
+ 305   1              mDelaymS( 20 );                                                                     // USB×ÜÏß¸´Î»ÆÚ¼ä
+ 306   1      //      Write374Byte( REG_USB_SETUP, M_SET_USB_BUS_FREE( Read374Byte( REG_USB_SETUP ) ) );  // USB×ÜÏß¿ÕÏĞ
+ 307   1              HostSetBusFree( );                                                                  // USB×ÜÏß¿ÕÏĞ
+ 308   1              mDelaymS( 1 );
+ 309   1              Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE | BIT_IF_DEV_DETECT | BIT_IF_USB_SUSPEND );  // ÇåÖĞ¶Ï±êÖ¾
+ 310   1      }
+ 311          
+ 312          /* Éè¶¨È«ËÙUSBÉè±¸ÔËĞĞ»·¾³ */
+ 313          void    HostSetFullSpeed( void )  
+ 314          {
+ 315   1              Write374Byte( REG_USB_SETUP, Read374Byte( REG_USB_SETUP ) & ~ BIT_SETP_USB_SPEED | BIT_SETP_AUTO_SOF  ); 
+             - // È«ËÙÇÒ·¢SOF
+ 316   1              mDelaymS( 1 );
+ 317   1      }
+ 318          
+ 319          /* Éè¶¨µÍËÙUSBÉè±¸ÔËĞĞ»·¾³ */
+ 320          void    HostSetLowSpeed( void )  
+ 321          {
+ 322   1              Write374Byte( REG_USB_SETUP, Read374Byte( REG_USB_SETUP ) | BIT_SETP_USB_SPEED | BIT_SETP_AUTO_SOF );  //
+             - µÍËÙÇÒ·¢SOF
+ 323   1              mDelaymS( 1 );
+ 324   1      }
+ 325          
+ 326           /* ³õÊ¼»¯USBÖ÷»ú */
+ 327          void    Init374Host( void ) 
+ 328          {
+ 329   1              Write374Byte( REG_USB_SETUP, 0x00 );
+ 330   1              SetHostUsbAddr( 0x00 );
+ 331   1              Write374Byte( REG_USB_H_CTRL, 0x00 );
+ 332   1              Write374Byte( REG_INTER_FLAG, BIT_IF_USB_PAUSE | BIT_IF_INTER_FLAG );  // ÇåËùÓĞÖĞ¶Ï±êÖ¾
+ 333   1      //      Write374Byte( REG_INTER_EN, BIT_IE_TRANSFER );                         // ÔÊĞí´«ÊäÍê³ÉÖĞ¶Ï,ÒòÎª±¾³ÌĞòÊ¹
+             -ÓÃ²éÑ¯·½Ê½¼ì²âUSBÉè±¸²å°Î,ËùÒÔÎŞĞèUSBÉè±¸¼ì²âÖĞ¶Ï
+ 334   1              Write374Byte( REG_INTER_EN, BIT_IE_TRANSFER | BIT_IE_DEV_DETECT );     // ÔÊĞí´«ÊäÍê³ÉÖĞ¶ÏºÍUSBÉè±¸¼ì²âÖĞ
+             -¶Ï
+ 335   1              Write374Byte( REG_SYS_CTRL, BIT_CTRL_OE_POLAR );                       // ¶ÔÓÚCH374T»òÕßUENÒı½ÅĞü¿ÕµÄCH37
+             -4S±ØĞëÖÃBIT_CTRL_OE_POLARÎª1
+ 336   1              HostSetBusFree( );                                                     // USB×ÜÏß¿ÕÏĞ
+ 337   1      }
+ 338          
+ 339          /* »ñÈ¡Éè±¸ÃèÊö·û */
+ 340          UINT8   GetDeviceDescr( PUINT8 buf )  
+ 341          {
+ 342   1              UINT8   s, len;
+ 343   1              s = HostCtrlTransfer374( SetupGetDevDescr, buf, &len );                // Ö´ĞĞ¿ØÖÆ´«Êä
+ 344   1              if ( s == USB_INT_SUCCESS ) {
+ 345   2                      UsbDevEndpSize = ( (PUSB_DEV_DESCR)buf ) -> bMaxPacketSize0;      // ¶Ëµã0×î´ó°ü³¤¶È,ÕâÊÇ¼ò»¯´¦Àí,Õı³£Ó¦
+             -¸ÃÏÈ»ñÈ¡Ç°8×Ö½ÚºóÁ¢¼´¸üĞÂUsbDevEndpSizeÔÙ¼ÌĞø
+ 346   2                      if ( len < ( (PUSB_SETUP_REQ)SetupGetDevDescr ) -> wLengthL ) s = USB_INT_BUF_OVER;  // ÃèÊö·û³¤¶È´íÎó
+ 347   2              }
+ 348   1              return( s );
+ 349   1      }
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 7   
+
+ 350          
+ 351          /* »ñÈ¡ÅäÖÃÃèÊö·û */
+ 352          UINT8   GetConfigDescr( PUINT8 buf )  
+ 353          {
+ 354   1              UINT8   s, len,i,c,j;
+ 355   1              UINT8   BufLogDescr[ sizeof( SetupGetCfgDescr ) ] ;
+ 356   1      
+ 357   1              s = HostCtrlTransfer374( SetupGetCfgDescr, buf, &len );    // Ö´ĞĞ¿ØÖÆ´«Êä
+ 358   1              if ( s == USB_INT_SUCCESS ) 
+ 359   1          {
+ 360   2                      for(i=0;i!=len;i++)
+ 361   2                              printf("%02x ",(unsigned short)buf[i]);
+ 362   2                      printf("\n");
+ 363   2                      if ( len < ( (PUSB_SETUP_REQ)SetupGetCfgDescr ) -> wLengthL ) s = USB_INT_BUF_OVER;  // ·µ»Ø³¤¶È´íÎó
+ 364   2                      else 
+ 365   2              {
+ 366   3                              memcpy ( BufLogDescr, SetupGetCfgDescr, sizeof( SetupGetCfgDescr ) );
+ 367   3                              ( (PUSB_SETUP_REQ)BufLogDescr ) -> wLengthL = ( (PUSB_CFG_DESCR)buf ) -> wTotalLengthL;  // ÍêÕûÅäÖÃÃèÊ
+             -ö·ûµÄ×Ü³¤¶È
+ 368   3                              s = HostCtrlTransfer374( BufLogDescr, buf, &len );   // Ö´ĞĞ¿ØÖÆ´«Êä
+ 369   3                              if ( s == USB_INT_SUCCESS ) 
+ 370   3                  {
+ 371   4      //¼òµ¥·ÖÎöÅäÖÃÃèÊö·û£¬»ñÈ¡¶ËµãµØÖ·£¬ÕâÀïÖ»´¦ÀíÒ»¸ö¶ËµãµÄÇé¿ö
+ 372   4                              for ( i = 0; i < ( (PUSB_CFG_DESCR)buf ) -> wTotalLengthL; i ++ ) printf( "%02X ", (UINT16)( buf
+             -[i] ) );  //ÅäÖÃÃèÊö·û
+ 373   4                              printf( "\n" );
+ 374   4                      for(i=0;i<( (PUSB_CFG_DESCR)buf ) -> wTotalLengthL;i++) 
+ 375   4                      {
+ 376   5                          if((buf[i]==0x09)&&(buf[i+1]==0x21)&&(buf[i+6]==0x22))  hid_des_leng=buf[i+7];    //»ñ
+             -È¡±¨¸æÃèÊö·ûµÄ³¤¶È         
+ 377   5                      }
+ 378   4                      printf("hid_des_leng=%02x\n",(unsigned short)hid_des_leng);
+ 379   4                      endp_out_addr=endp_in_addr=0;endp_num=0;
+ 380   4                      for(i=0;i<( (PUSB_CFG_DESCR)buf ) -> wTotalLengthL;i++) 
+ 381   4                      {
+ 382   5                          if((buf[i]==0x09)&&(buf[i+1]==0x04)&&(buf[i+5]==0x03)&&(buf[i+7]==0x01)||(buf[i+7]==0x
+             -02))  //½Ó¿ÚÃèÊö·ûÎªHIDµÄÊó±ê¡¢¼üÅÌ   
+ 383   5                          { 
+ 384   6                                  for(j=0;j<( (PUSB_CFG_DESCR)buf ) -> wTotalLengthL-i;j++) 
+ 385   6                              {
+ 386   7                                      if((buf[i+j]==0x07)&&(buf[i+j+1]==0x05)&&(buf[i+j+3]==0x03))   c=buf[i+j+2];     
+             -   //ÅĞ¶ÏÊÇ·ñÎªÖĞ¶Ï¶Ëµã
+ 387   7                                      if ( c&0x80 )    endp_in_addr=c&0x0f;         // IN¶ËµãµÄµØÖ·                    
+             -            
+ 388   7                                                                  else                                      // OUT¶Ëµã 
+ 389   7                                      {
+ 390   8                                                                          endp_out_addr=c&0x0f;
+ 391   8                                                                  }
+ 392   7                                  if((endp_out_addr!=0)||(endp_in_addr!=0))   break;                            
+             -           
+ 393   7                                  }
+ 394   6                          }
+ 395   5                          if((endp_out_addr!=0)||(endp_in_addr!=0))   break;           
+ 396   5                      }
+ 397   4                      printf("endp_in_addr=%02x\n",(unsigned short)endp_in_addr);
+ 398   4                      printf("endp_out_addr=%02x\n",(unsigned short)endp_out_addr);
+ 399   4                              }
+ 400   3                      }
+ 401   2              }
+ 402   1              return( s );
+ 403   1      }
+ 404          
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 8   
+
+ 405          /* ÉèÖÃUSBÉè±¸µØÖ· */
+ 406          UINT8   SetUsbAddress( UINT8 addr )  
+ 407          {
+ 408   1              UINT8   s;
+ 409   1              UINT8   BufSetAddr[ sizeof( SetupSetUsbAddr ) ] ;
+ 410   1              memcpy ( BufSetAddr, SetupSetUsbAddr, sizeof( SetupSetUsbAddr ) );
+ 411   1              ( (PUSB_SETUP_REQ)BufSetAddr ) -> wValueL = addr;        // USBÉè±¸µØÖ·
+ 412   1              s = HostCtrlTransfer374( BufSetAddr, NULL, NULL );       // Ö´ĞĞ¿ØÖÆ´«Êä
+ 413   1              if ( s == USB_INT_SUCCESS ) {
+ 414   2                      SetHostUsbAddr( addr );                              // ÉèÖÃUSBÖ÷»úµ±Ç°²Ù×÷µÄUSBÉè±¸µØÖ·
+ 415   2              }
+ 416   1              mDelaymS( 3 );                                           // µÈ´ıUSBÉè±¸Íê³É²Ù×÷
+ 417   1              return( s );
+ 418   1      }
+ 419          
+ 420          /* ÉèÖÃUSBÉè±¸ÅäÖÃ */
+ 421          UINT8   SetUsbConfig( UINT8 cfg )  
+ 422          {
+ 423   1              UINT8   BufSetCfg[ sizeof( SetupSetUsbConfig ) ] ;
+ 424   1              memcpy ( BufSetCfg, SetupSetUsbConfig, sizeof( SetupSetUsbConfig ) );
+ 425   1              ( (PUSB_SETUP_REQ)BufSetCfg ) -> wValueL = cfg;          // USBÉè±¸ÅäÖÃ
+ 426   1              return( HostCtrlTransfer374( BufSetCfg, NULL, NULL ) );  // Ö´ĞĞ¿ØÖÆ´«Êä
+ 427   1      }
+ 428          
+ 429          /* ÉèÖÃIdle */
+ 430          UINT8  Set_Idle( )    
+ 431          {
+ 432   1              UINT8  s;
+ 433   1              s=HostCtrlTransfer374(SetupSetidle,NULL,NULL);
+ 434   1              return s;
+ 435   1      }
+ 436          
+ 437          /* »ñÈ¡±¨±íÃèÊö·û */
+ 438          UINT8  Get_Hid_Des(unsigned char *p)
+ 439          {
+ 440   1              UINT8  s;
+ 441   1      //      leng=SetupGetHidDes[0x06]-0x40;                        //±¨±íÃèÊö·ûµÄ³¤¶ÈÔÚ·¢ËÍÊı¾İ³¤¶ÈµÄ»ù´¡ÉÏ¼õÈ¥0X40
+ 442   1              s=HostCtrlTransfer374(SetupGetHidDes,p,&SetupGetHidDes[0x06]);
+ 443   1              return s;
+ 444   1      }
+ 445          
+ 446          /* ÉèÖÃ±¨±í */
+ 447          UINT8  Set_Report(unsigned char *p)
+ 448          {
+ 449   1              UINT8  s,l=1;
+ 450   1              s=HostCtrlTransfer374(SetupSetReport,p,&l);            //Êµ¼ÊµÄÊı¾İ¿ÉÒÔĞ´±ğµÄÊı¾İ£¬Õâ¸öÄã¿ÉÒÔÓÃ¼ÆËã»ú×¥ÏÂ
+             -Êı¾İÔÚ·¢ÏÂÈ¥
+ 451   1              return s;
+ 452   1      }
+ 453          
+ 454          /* ÎªprintfºÍgetkeyÊäÈëÊä³ö³õÊ¼»¯´®¿Ú */
+ 455          void    mInitSTDIO( )
+ 456          {
+ 457   1              SCON = 0x50;
+ 458   1              PCON = 0x80;
+ 459   1              TMOD = 0x20;
+ 460   1              TH1 = 0xf3;                                           //24MHZ, 9600                          
+ 461   1              TR1 = 1;
+ 462   1              TI = 1;
+ 463   1      }
+ 464          
+ 465          
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 9   
+
+ 466          int     main( void ) 
+ 467          {
+ 468   1              UINT8   i, s,close_bit_flag=0;
+ 469   1              UINT8   idata   buf[80];            //ÓÉÓÚ±¨¸æÃèÊö·û´óĞ¡²»¶¨£¬»º³åÇøµÄ´óĞ¡×îºÃ¶¨Òå´óĞ©
+ 470   1      //      P1&=0xF8;                           // Èç¹ûÔÚUÅÌÎÄ¼ş¶ÁĞ´Ä£¿éÉÏÊÔÓÃ±¾³ÌĞò±ØĞë¼ÓÉÏ±¾ĞĞ
+ 471   1              mDelaymS( 50 );                     // µÈ´ıCH374¸´Î»Íê³É
+ 472   1              CH374_PORT_INIT( );                 // CH374½Ó¿Ú³õÊ¼»¯ 
+ 473   1              mInitSTDIO( );                      // ÎªÁËÈÃ¼ÆËã»úÍ¨¹ı´®¿Ú¼à¿ØÑİÊ¾¹ı³Ì 
+ 474   1              for(i=0;i!=64;i++)
+ 475   1          {
+ 476   2                      s=Read374Byte(i);
+ 477   2                      printf("%02x ",(unsigned short)s);
+ 478   2              }
+ 479   1              printf("\n");
+ 480   1              printf( "Start CH374 Host\n" );
+ 481   1              Init374Host( );                     // ³õÊ¼»¯USBÖ÷»ú
+ 482   1              while ( 1 ) 
+ 483   1          {
+ 484   2                      HostSetBusFree( );              // Éè¶¨USBÖ÷»ú¿ÕÏĞ
+ 485   2                      while ( 1 )
+ 486   2              {
+ 487   3                              if ( Query374Interrupt( ) ) HostDetectInterrupt( );  // Èç¹ûÓĞUSBÖ÷»úÖĞ¶ÏÔò´¦Àí
+ 488   3                              if ( Query374DeviceIn( ) ) break;                    // ÓĞUSBÉè±¸
+ 489   3                      }
+ 490   2                      mDelaymS( 250 );                                         // ÓÉÓÚUSBÉè±¸¸Õ²åÈëÉĞÎ´ÎÈ¶¨£¬¹ÊµÈ´ıUSBÉè±¸Êı°Ù
+             -ºÁÃë£¬Ïû³ı²å°Î¶¶¶¯
+ 491   2                      if ( Query374Interrupt( ) ) HostDetectInterrupt( );      // Èç¹ûÓĞUSBÖ÷»úÖĞ¶ÏÔò´¦Àí
+ 492   2      
+ 493   2                      printf( "Reset Device\n" );
+ 494   2                      HostSetBusReset( );                                      // USB×ÜÏß¸´Î»
+ 495   2                      for ( i = 0; i < 100; i ++ )                             // µÈ´ıUSBÉè±¸¸´Î»ºóÖØĞÂÁ¬½Ó
+ 496   2              {
+ 497   3                              if ( Query374DeviceIn( ) ) break;                    // ÓĞUSBÉè±¸
+ 498   3                              mDelaymS( 1 );
+ 499   3                      }
+ 500   2                      if ( Query374Interrupt( ) ) HostDetectInterrupt( );      // Èç¹ûÓĞUSBÖ÷»úÖĞ¶ÏÔò´¦Àí
+ 501   2                      if ( Query374DeviceIn( ) )                               // ÓĞUSBÉè±¸
+ 502   2              {  
+ 503   3                              if ( Query374DevFullSpeed( ) )
+ 504   3                  {
+ 505   4                                      printf( "Start Full-Speed Device\n" );
+ 506   4                                      HostSetFullSpeed( );                             // ¼ì²âµ½È«ËÙUSBÉè±¸
+ 507   4                              }
+ 508   3                              else 
+ 509   3                  {
+ 510   4                                      printf( "Start Low-Speed Device\n" );
+ 511   4                                      HostSetLowSpeed( );                             // ¼ì²âµ½µÍËÙUSBÉè±¸
+ 512   4                                      LOW_SPEED_BIT=1;
+ 513   4                              }
+ 514   3                      }
+ 515   2                      else 
+ 516   2              {
+ 517   3                              continue;                                           // Éè±¸ÒÑ¾­¶Ï¿ª,¼ÌĞøµÈ´ı
+ 518   3                      }
+ 519   2                      mDelaymS( 50 );
+ 520   2                      close_bit_flag=0;
+ 521   2                      printf( "GetDeviceDescr: " );
+ 522   2                      s = GetDeviceDescr( buf );                             // »ñÈ¡Éè±¸ÃèÊö·û
+ 523   2                      printf("device_status=%02x \n",(unsigned short)s);
+ 524   2                      if ( s != USB_INT_SUCCESS )
+ 525   2              {
+ 526   3                              goto WaitDeviceOut;                                // ÖÕÖ¹²Ù×÷,µÈ´ıUSBÉè±¸°Î³ö
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 10  
+
+ 527   3                      }
+ 528   2                      for ( i = 0; i < ( (PUSB_SETUP_REQ)SetupGetDevDescr ) -> wLengthL; i ++ ) printf( "%02X ", (UINT16)( buf
+             -[i] ) );
+ 529   2                      printf( "\n" );
+ 530   2                      s = SetUsbAddress( 0x02 );                             // ÉèÖÃUSBÉè±¸µØÖ·
+ 531   2                      printf("address_status=%02x\n",(unsigned short)s);
+ 532   2                      if ( s != USB_INT_SUCCESS ) 
+ 533   2              {
+ 534   3                              goto WaitDeviceOut;                                // ÖÕÖ¹²Ù×÷,µÈ´ıUSBÉè±¸°Î³ö
+ 535   3                      }
+ 536   2                      s = GetConfigDescr( buf );                             // »ñÈ¡ÅäÖÃÃèÊö·û
+ 537   2                      printf("config_status=%02x\n",(unsigned short)s);
+ 538   2                      if ( s != USB_INT_SUCCESS ) 
+ 539   2              {
+ 540   3                              goto WaitDeviceOut;                                // ÖÕÖ¹²Ù×÷,µÈ´ıUSBÉè±¸°Î³ö
+ 541   3                      }
+ 542   2      
+ 543   2      // ·ÖÎöÅäÖÃÃèÊö·û£¬»ñÈ¡¶ËµãÊı¾İ/¸÷¶ËµãµØÖ·/¸÷¶Ëµã´óĞ¡µÈ£¬¸üĞÂ±äÁ¿endp_addrºÍendp_sizeµÈ 
+ 544   2                      s = SetUsbConfig( ( (PUSB_CFG_DESCR)buf ) -> bConfigurationValue );   // ÉèÖÃUSBÉè±¸ÅäÖÃ
+ 545   2                      if ( s != USB_INT_SUCCESS ) 
+ 546   2              {
+ 547   3      //              printf( "ERROR = %02X\n", (UINT16)s );
+ 548   3                              goto WaitDeviceOut;                               // ÖÕÖ¹²Ù×÷,µÈ´ıUSBÉè±¸°Î³ö
+ 549   3                      }
+ 550   2                      else    printf( "SetUsbConfig_success\n" );
+ 551   2      
+ 552   2      //-------------------------ÒÔÏÂ½øĞĞHIDÀàµÄ¼òµ¥²Ù×÷--------------------------------------------------------
+             ----
+ 553   2              printf("Set_Idle\n");
+ 554   2                      s=Set_Idle( );                                        //ÉèÖÃIDLE£¬Õâ¸ö²½ÖèÊÇ°´ÕÕHIDÀàµÄĞ­ÒéÀ´×öµÄ
+ 555   2                      if(s!=USB_INT_SUCCESS)
+ 556   2              {
+ 557   3                              printf("Set_Idle_Err=%02x\n",(unsigned short)s);
+ 558   3                  if(s&0x0f==USB_INT_RET_STALL)  goto next_operate1; //·µ»ØSTALL¿ÉÄÜ±¾Éí²»Ö§³Ö
+ 559   3                      }
+ 560   2                      else printf("Set_idle success\n");
+ 561   2      next_operate1:
+ 562   2              printf("Get_Hid_Des\n");
+ 563   2                      s=Get_Hid_Des(buf);                                  // »ñÈ¡±¨±íÃèÊö·ûÃèÊö·û
+ 564   2                      if(s==USB_INT_SUCCESS)
+ 565   2              {
+ 566   3                              printf("HID_Desc: ");
+ 567   3                              for(i=0;i!=hid_des_leng;i++)  printf("%02x ",(unsigned short)buf[i]);
+ 568   3                              printf("\n");
+ 569   3                      }
+ 570   2                      else
+ 571   2              {
+ 572   3                              goto WaitDeviceOut;                             //³ö´íÍË³ö
+ 573   3                      }
+ 574   2      
+ 575   2              printf("Set_Report \n");                            //¶ÔÓÚ¼üÅÌ·¢Set_ReportÀ´µãÁÁµÆ,¶ÔÓÚÊó±êÔò²»ĞèÒ
+             -ªÕâÒ»²½
+ 576   2                      buf[0]=0x01;
+ 577   2                      s=Set_Report(buf);                                 //ÉèÖÃ±¨±í
+ 578   2                      if(s==USB_INT_SUCCESS)   
+ 579   2              {
+ 580   3                   printf("Set_Report success\n");
+ 581   3              }
+ 582   2                      else
+ 583   2              { 
+ 584   3                    printf("Set_Report Err=%02x\n",(unsigned short)s);      //ÉèÖÃ±¨¸æ³ö´í
+ 585   3                    if(s&0x0f==USB_INT_RET_STALL)  goto next_operate2;      //·µ»ØSTALL¿ÉÄÜ±¾Éí²»Ö§³Ö           
+C51 COMPILER V7.06   HOST                                                                  10/23/2007 16:30:41 PAGE 11  
+
+ 586   3                      }
+ 587   2      next_operate2:
+ 588   2      
+ 589   2      // ÏÂÃæ¿ªÊ¼¶ÁÈ¡Êı¾İ ( Êµ¼ÊÔÚ¶ÁÈ¡Êı¾İµÄÊ±ºò£¬ÒªÏÈ·¢ËÍÖĞ¶Ï¶ËµãµÄÁîÅÆÀ´¶ÁÈ¡Êı¾İ£¬½Ó×Å²ÅÄÜ»ñÈ¡µ½Êı¾İ )
+ 590   2                      tog1=FALSE;                                  //¿ªÊ¼È¡DATA0
+ 591   2                      while(1)
+ 592   2              {
+ 593   3                              s=Interrupt_Data_Trans(buf);
+ 594   3      //          printf("s:%x \n",(unsigned short)s);
+ 595   3                              if(s==USB_INT_SUCCESS)
+ 596   3                  {
+ 597   4                                      for(i=0;i!=8;i++)       printf("%02x ",(unsigned short)buf[i]);
+ 598   4                                      printf("\n");
+ 599   4                              }
+ 600   3                              else if(s==USB_INT_DISCONNECT)            //  Õâ¸öÊÇÎªÁËÖªµÀÉè±¸°Î³ö²úÉúµÄÖĞ¶Ï×´Ì¬
+ 601   3                  {
+ 602   4                                      close_bit_flag=1;
+ 603   4                                      break;                          
+ 604   4                              }
+ 605   3                      }
+ 606   2      WaitDeviceOut:                                       // µÈ´ıUSBÉè±¸°Î³ö
+ 607   2                      printf( "Wait Device Out\n" );
+ 608   2                  if(close_bit_flag==0){
+ 609   3                          while ( 1 )
+ 610   3                  {
+ 611   4                                   if ( Query374Interrupt( ) ) HostDetectInterrupt( );  // Èç¹ûÓĞUSBÖ÷»úÖĞ¶ÏÔò´¦Àí
+ 612   4                                   if ( Query374DeviceIn( ) == FALSE ) break;           // Ã»ÓĞUSBÉè±¸
+ 613   4                          }
+ 614   3                  }
+ 615   2                      mDelaymS( 100 );                                             // µÈ´ıÉè±¸ÍêÈ«¶Ï¿ª£¬Ïû³ı²å°Î¶¶¶¯
+ 616   2          }
+ 617   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2750    ----
+   CONSTANT SIZE    =    452    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8      77
+   IDATA SIZE       =   ----      80
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

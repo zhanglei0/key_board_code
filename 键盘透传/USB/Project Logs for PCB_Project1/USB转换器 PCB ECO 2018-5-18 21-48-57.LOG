@@ -1,0 +1,18 @@
+Added Component: Designator=Q7(SOT23A)
+Added Component: Designator=Q8(SOT23A)
+Added Pin To Net: NetName=GND Pin=Q7-2
+Added Pin To Net: NetName=GND Pin=Q8-2
+Added Pin To Net: NetName=LED0 Pin=Q8-1
+Added Pin To Net: NetName=LED0 Pin=U2-45
+Added Net: Name=LED0
+Added Pin To Net: NetName=LED1 Pin=Q7-1
+Added Pin To Net: NetName=LED1 Pin=U2-46
+Added Net: Name=LED1
+Added Pin To Net: NetName=NetQ7_3 Pin=Q7-3
+Added Pin To Net: NetName=NetQ7_3 Pin=R5-1
+Added Net: Name=NetQ7_3
+Added Pin To Net: NetName=NetQ8_3 Pin=Q8-3
+Added Pin To Net: NetName=NetQ8_3 Pin=R4-1
+Added Net: Name=NetQ8_3
+Added Member To Class: ClassName=Í¸´«°å Member=Component Q7 SI2302
+Added Member To Class: ClassName=Í¸´«°å Member=Component Q8 SI2302

@@ -1,0 +1,6 @@
+[ProjectGroup]
+Version=1.0
+[Project1]
+ProjectPath=..\..\USB\PCB_Project1.PrjPCB
+[Project2]
+ProjectPath=Documents\Documents.PrjPcb

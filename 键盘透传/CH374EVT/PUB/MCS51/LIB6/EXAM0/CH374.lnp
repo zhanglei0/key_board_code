@@ -1,0 +1,7 @@
+"CH374.obj",
+"HOST.obj",
+"DEVICE.obj",
+"..\CH374HF6.LIB",
+"..\C51DPTR1.LIB" 
+TO "CH374" 
+RAMSIZE(256) 
